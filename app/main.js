@@ -1,5 +1,6 @@
 import {fields,infer,csv,normalize,merge,feedback,exportCSV,clean} from './core.js';
 import {readXLSX} from './xlsx.js';
+import {DEFAULT_CLASSES} from './school.js';
 import {studentKey,topicKey,studentsIn,masteryForStudent,aggregateTopics,evidence,learningPlan,fmt,mean} from './analysis.js';
 import {$,el,fillSelect,bar,badge,download} from './ui.js';
 import {studentReport,classReport} from './reports.js';
@@ -16,6 +17,8 @@ function validateConfig(value){
   return {classes:[...new Set(value.classes.map(clean))],topics:normalized};
 }
 try{const saved=localStorage.getItem(STORE);if(saved)({classes,topics}=validateConfig(JSON.parse(saved)));}catch{ $('globalNotice').textContent='本机课程设置无法读取，可重新添加或导入备份。';}
+// Merge school defaults with existing local settings instead of replacing teacher work.
+classes=[...new Set([...DEFAULT_CLASSES,...classes])];
 function notify(text){$('globalNotice').textContent=text;}
 function saveConfig(){try{localStorage.setItem(STORE,JSON.stringify({classes,topics}));}catch{notify('浏览器未能保存课程设置，请使用“导出课程设置”备份。');}}
 const lessonsSelected=()=> $('lessonFilter').value?[$('lessonFilter').value]:[];

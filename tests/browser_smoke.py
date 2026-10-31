@@ -11,6 +11,12 @@ with sync_playwright() as p:
  page=browser.new_page(viewport={'width':1440,'height':1050})
  errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
  page.goto(os.environ.get('ZHIKE_TEST_URL','http://127.0.0.1:8001'))
+ for group in ['莲花实验班','滨州实验1班','滨州实验2班','滨州一中班']:
+  assert group in page.locator('#classTags').inner_text()
+ page.evaluate("localStorage.setItem('zhike-course-v2',JSON.stringify({classes:['既有班级'],topics:[]}))")
+ page.reload()
+ assert '既有班级' in page.locator('#classTags').inner_text()
+ assert '莲花实验班' in page.locator('#classTags').inner_text()
  page.locator('#demo').click()
  assert page.locator('#groupFilter').input_value()=='示例一班'
  assert page.locator('#results tr').count()==15
