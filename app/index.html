@@ -1,10 +1,37 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>知课 · 学情分析工作台</title><link rel="stylesheet" href="style.css"></head><body>
-<header><div class="brand">知课 <span>学情分析工作台</span></div><span class="badge">本地处理 · 成绩不上传</span></header>
-<main><section class="intro"><div><p class="eyebrow">让每一次练习，都有下一步</p><h1>看见学习的变化，<br>给出有用的反馈。</h1><p>把课堂练习与课后作业连起来，找到每位学生下一节课的学习重点。</p></div><div class="intro-actions"><button id="demo">体验示例数据</button><button class="secondary" id="template">下载导入模板</button></div></section>
-<section class="panel"><div class="section-title"><h2>01 / 导入与自动匹配</h2><span>XLSX · CSV</span></div><p class="muted">可导入一张综合成绩表，或依次导入课堂、作业两张表。优先按「班级 + 学号 + 课次」匹配，无学号时使用姓名。同名歧义和重复分数会提示核对。</p>
-<div class="controls"><label>表格类型<select id="mode"><option value="combined">综合成绩表（课堂 + 作业）</option><option value="classroom">课堂练习表</option><option value="homework">课后作业表</option></select></label><label>表内没有课次时填写<input id="lesson" placeholder="例如：第1课"></label><label>本次导入满分<input id="max" type="number" value="100" min="1"></label><label class="file-label">选择成绩表<input id="file" type="file" accept=".csv,.xlsx"></label></div>
-<p class="muted small">Excel 读取第一张工作表，第一行为表头；课次请在两张表中保持一致。满分不同的课堂与作业请分开导入，分数统一换算为百分制。CSV 使用 UTF-8 编码。</p><div id="mapping" hidden></div><div id="notice" role="status" aria-live="polite"></div><ul id="issues"></ul><div id="imports" class="muted small"></div></section>
-<section class="metrics" id="metrics"></section>
-<section class="panel"><div class="section-title"><h2>02 / 学情与行动建议</h2><div class="actions"><button class="secondary" id="export">导出分析结果</button><button class="text-btn" id="clear">清空数据</button></div></div><div class="controls filters"><label>搜索学生<input id="search" placeholder="输入姓名或学号"></label><label>课次<select id="lessonFilter"><option value="">全部课次</option></select></label><label>关注情况<select id="statusFilter"><option value="">全部情况</option><option>待补齐</option><option>待核对</option><option>重点跟进</option><option>作业跟进</option><option>课堂跟进</option><option>需要巩固</option><option>持续巩固</option><option>表现稳定</option></select></label></div>
-<div class="table-wrap"><table><thead><tr><th>学生 / 学号</th><th>班级</th><th>课次</th><th>课堂练习</th><th>课后作业</th><th>学习情况</th><th>反馈与改进方案</th></tr></thead><tbody id="results"></tbody></table></div><div id="empty">还没有成绩。导入表格，或点击「体验示例数据」开始。</div><p class="muted small">建议依据单课百分制成绩生成：低于 60 分为基础巩固重点；课堂与作业差距 ≥20 分时提示专项跟进。缺失成绩不按 0 分计算，成绩不能单独说明学生的学习原因，请结合课堂观察调整方案。</p></section>
-<footer>数据仅保存在当前页面内存中，刷新后清除。可导出结果留存；示例数据均为虚构。</footer></main><script type="module" src="main.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>知课 · 学习证据与教学改进</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><a class="brand" href="#">知课 <span>学习证据与教学改进</span></a><nav aria-label="主导航"><a href="#setup">课程设置</a><a href="#analysis">学情分析</a><a href="#reports">学习报告</a></nav><span class="badge">本地分析 · 数据不上传</span></header>
+<main>
+<section class="intro"><div><p class="eyebrow">LEARNING EVIDENCE / 教学分析工作台</p><h1>以学习证据为基础，<br>让教学改进具体可行。</h1><p>按班级查看表现，定位每课知识点，形成有目标、有练习、有复测的学习方案。</p></div><div class="intro-actions"><button id="demo">体验多班级示例</button><button class="secondary" id="template">下载知识点成绩模板</button></div></section>
+<div id="globalNotice" role="status" aria-live="polite"></div>
+<section class="panel" id="setup"><div class="section-title"><h2><span class="section-no">01</span> 班级与课程知识点</h2><span>TEACHING DESIGN</span></div>
+<p class="muted">班级用于隔离分析与报告；每个课次的知识点可在多个班级复用。课程设置保存在本机浏览器，学生成绩只保存在本页内存。</p>
+<form id="classForm" class="controls"><label>新增班级<input id="className" placeholder="例如：七年级一班" maxlength="80" required></label><button type="submit" class="secondary">添加班级</button><div id="classTags" class="tags"></div></form>
+<details><summary>添加 / 编辑每课知识点与教学任务</summary>
+<form id="topicForm"><div class="controls"><label>课次<input id="topicLesson" placeholder="例如：第1课" list="lessonNames" maxlength="80" required></label><label>知识点名称<input id="topicTitle" placeholder="例如：一元一次方程的移项" maxlength="120" required></label></div>
+<div class="form-grid"><label>具体学习目标<textarea id="topicObjective" placeholder="例如：解释移项的依据，并准确处理符号变化" maxlength="1000"></textarea></label><label>指定练习任务<textarea id="topicPractice" placeholder="例如：教材第32页第1–3题；先写变形依据，再求解并代入检验" maxlength="2000"></textarea></label><label>参考材料<input id="topicResource" placeholder="教材页码、讲义名称或参考材料" maxlength="500"></label></div>
+<div class="actions"><button type="submit" id="saveTopic">保存知识点</button><button type="button" class="secondary" id="resetTopic">取消编辑</button></div></form>
+<div id="topicList"></div></details>
+</section>
+<section class="panel"><div class="section-title"><h2><span class="section-no">02</span> 导入学习证据</h2><span>XLSX / CSV</span></div>
+<p class="muted">每行可记录一个「学生 × 课次 × 知识点」。无知识点列的旧表格仍可导入，但仅作为整课成绩，不参与知识点掌握计算。</p>
+<div class="controls"><label>表格类型<select id="mode"><option value="combined">综合成绩表（课堂 + 作业）</option><option value="classroom">课堂练习表</option><option value="homework">课后作业表</option></select></label><label>无班级列时使用<select id="importGroup"></select></label><label>无课次列时使用<input id="lesson" placeholder="例如：第1课" list="lessonNames"></label><label>本次导入满分<input id="max" type="number" value="100" min="1"></label><label class="file-label">选择成绩表<input id="file" type="file" accept=".csv,.xlsx"></label></div>
+<p class="muted small">Excel 读取首张工作表，第一行为表头。不同满分请分开导入。知识点名与课次须一致，同一知识点多道题请先在表中汇总为该知识点得分。</p>
+<div id="mapping" hidden></div><div id="notice" role="status" aria-live="polite"></div><ul id="issues"></ul><div id="imports" class="muted small"></div>
+<details><summary>手动录入 / 修正单个学生的知识点成绩</summary><p class="muted small">先导入学生名单成绩，或载入示例。此处保存会替换该学生本课该知识点的已有两项成绩；留空表示缺失。</p><form id="scoreForm" class="controls"><label>学生<select id="scoreStudent" required></select></label><label>课次<select id="scoreLesson" required></select></label><label>知识点<select id="scoreTopic" required></select></label><label>课堂练习 / 100<input id="scoreClassroom" type="number" min="0" max="100" step="0.01"></label><label>课后作业 / 100<input id="scoreHomework" type="number" min="0" max="100" step="0.01"></label><button type="submit">保存成绩</button></form></details>
+</section>
+<section id="analysis" class="panel scope-panel"><div class="section-title"><h2><span class="section-no">03</span> 分析范围</h2><span>所有图表与导出遵循班级、课次筛选</span></div><div class="controls"><label>班级<select id="groupFilter"></select></label><label>课次<select id="lessonFilter"></select></label><label>搜索学生<input id="search" placeholder="姓名 / 学号"></label></div><p class="small muted" id="scopeLabel"></p></section>
+<section class="metrics" id="metrics" aria-label="范围统计"></section>
+<section class="panel"><div class="section-title"><h2>班级知识点掌握图</h2><button class="secondary" id="classReport">生成班级 PDF 报告</button></div><p class="muted small">指标 = 学生有效课堂、作业百分制得分的等权平均；班级指标再对学生等权平均。不是标准化能力测量。灰色表示无有效证据，不能视为零分。</p><div class="legend"><span><i class="legend-mark class-color"></i>课堂练习</span><span><i class="legend-mark homework-color"></i>课后作业</span><span>0–100 分 · 每个条形标注样本量</span></div><div id="classChart"></div><div id="heatmap" class="table-wrap"></div><p class="small muted">“优先补强”仅统计双源齐全且均分 &lt;60 的学生；缺失、冲突和单源均单独标注。分母为当前筛选下有成绩记录的学生，不代表班级完整在籍人数。</p></section>
+<section class="panel"><div class="section-title"><h2>个人知识点画像与详细学习方案</h2><label>选择学生<select id="studentFilter"></select></label></div><div id="studentChart"></div><div id="plans" class="plan-grid"></div></section>
+<section class="panel"><div class="section-title"><h2>证据明细与匹配结果</h2><button class="secondary" id="export">导出分析 CSV</button></div><div class="table-wrap"><table><thead><tr><th>学生 / 学号</th><th>班级</th><th>课次</th><th>知识点</th><th>课堂</th><th>作业</th><th>指标 / 状态</th></tr></thead><tbody id="results"></tbody></table></div><div id="empty" class="empty"></div></section>
+<section class="panel" id="reports"><div class="section-title"><h2><span class="section-no">04</span> 批量学生学习报告</h2><span>PRINT / PDF</span></div><p class="muted">按当前班级、课次及搜索范围选择学生。报告包含证据、知识点图表和分步学习方案，可一次生成多位学生的合并 PDF，每位学生另起一页。</p><div class="actions"><button class="secondary" id="selectAll">全选当前学生</button><button class="secondary" id="selectNone">取消选择</button><button id="batchReport">生成所选学生 PDF 报告</button></div><div id="studentChecklist" class="student-checklist"></div><p class="small muted">生成后先预览，再点击“打印 / 保存 PDF”，在浏览器打印窗口选择“另存为 PDF”，纸张 A4。无需安装插件；可按学生单独保存。报告使用中文文本和矢量图形，适合归档。</p></section>
+<section class="panel methodology"><h2>方法与解释边界</h2><p>知识点指标采用描述性评分：双源均分 &lt;60 为优先补强、60–79.9 为需要巩固、80–89.9 为达到目标、≥90 为拓展提升。这些是教学参考阈值，不是经验证的心理测量标准。单源分数仅作暂定观察，冲突记录不参与计算。总分与知识点评分分开展示，不相互补填。</p><p>方案明确目标、材料、练习、订正和延迟复测，由透明规则结合教师填写的教学内容生成。没有错题内容时，不自动判定具体错误原因；建议需由教师确认。</p></section>
+<div class="actions bottom-actions"><button class="secondary" id="backup">导出课程设置</button><label class="file-label secondary">导入课程设置<input type="file" id="restore" accept=".json"></label><button class="text-btn" id="clear">清空学生成绩</button></div>
+<footer>学生成绩仅保存在本页内存，刷新后清除。班级与课程知识点保存在本机浏览器，可导出备份；不会同步到其他设备。示例均为虚构。</footer>
+<datalist id="lessonNames"></datalist>
+</main>
+<section id="reportPreview" hidden aria-label="报告预览"><div class="report-toolbar"><strong id="reportTitle">报告预览</strong><button id="printReport">打印 / 保存 PDF</button><button id="closeReport" class="secondary">关闭预览</button></div><div id="reportPages"></div></section>
+<script type="module" src="main.js"></script></body></html>
