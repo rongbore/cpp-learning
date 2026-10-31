@@ -34,8 +34,8 @@ export function masteryForStudent(rows, topics, student, lessons = []) {
   });
 }
 
-export function aggregateTopics(rows, topics, lessons = []) {
-  const students = studentsIn(rows);
+export function aggregateTopics(rows, topics, lessons = [], population = studentsIn(rows)) {
+  const students = studentsIn(population);
   return catalogFor(rows, topics, lessons).map(topic => {
     const entries = students.map(student => evidence(rows.find(r => studentKey(r) === studentKey(student) && r.lesson === topic.lesson && r.topic === topic.title)));
     const scored = entries.filter(e => e.score !== null);

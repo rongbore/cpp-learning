@@ -28,11 +28,11 @@ export function studentReport(student, rows, topics, lessons) {
   if(totals.length){article.append(el('h2','整课总分（不用于推算知识点）'));for(const row of totals)article.append(el('p',`${row.lesson}：课堂 ${row.classroomConflict?'待核对':row.classroom??'缺失'}；作业 ${row.homeworkConflict?'待核对':row.homework??'缺失'}`));}
   return article;
 }
-export function classReport(rows,topics,lessons,scope) {
+export function classReport(rows,topics,lessons,scope,population) {
   const article=el('article',undefined,'report-page');article.append(reportHeader('班级知识点分析与教学改进报告',`${scope} · ${new Date().toLocaleDateString('zh-CN')}`),methodNote());
-  const stats=aggregateTopics(rows,topics,lessons);
+  const stats=aggregateTopics(rows,topics,lessons,population);
   if(!stats.length)article.append(el('p','本范围尚无知识点评分证据或课程设置。'));
-  for(const s of stats){const section=el('section',undefined,'report-plan');section.append(el('h2',`${s.topic.lesson} / ${s.topic.title}`),bar('课堂练习',s.classroom),bar('课后作业',s.homework,undefined,'homework-color'),el('p',`知识点指标 ${fmt(s.score)} / 100；有证据 ${s.count}/${s.total} 人；双源齐全 ${s.complete} 人；优先补强 ${s.weak} 人；无有效证据 ${s.missing} 人。分母为当前范围内有记录的学生。`));
+  for(const s of stats){const section=el('section',undefined,'report-plan');section.append(el('h2',`${s.topic.lesson} / ${s.topic.title}`),bar('课堂练习',s.classroom),bar('课后作业',s.homework,undefined,'homework-color'),el('p',`知识点指标 ${fmt(s.score)} / 100；有证据 ${s.count}/${s.total} 人；双源齐全 ${s.complete} 人；优先补强 ${s.weak} 人；无有效证据 ${s.missing} 人。分母为当前范围内名册与成绩学生去重合并后的学生。`));
     section.append(el('p',`教学建议：先为 ${s.missing} 位无有效证据的学生补充诊断；为 ${s.weak} 位双源均分低于60分的学生安排小组讲解与基础练习；其余学生按个人报告分层巩固。第7天用新题复测，复核干预效果。`));
     if(s.topic.objective)section.append(el('p','学习目标：'+s.topic.objective));
     if(s.topic.practice)section.append(el('p','指定练习：'+s.topic.practice));

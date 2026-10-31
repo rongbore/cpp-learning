@@ -1,5 +1,5 @@
 export const fields = {id:'学号',name:'姓名',group:'班级',lesson:'课次',classroom:'课堂练习成绩',homework:'课后作业成绩',score:'成绩',topic:'知识点'};
-const aliases = {topic:['知识点','课程知识点','考点','topic'],id:['学号','学生编号','学生id','id'],name:['姓名','学生姓名','学生','name'],group:['班级','班别','class'],lesson:['课次','课程','课节','课时','上课日期','日期','lesson'],classroom:['课堂练习成绩','课堂成绩','课堂练习','随堂测验','随堂成绩'],homework:['课后作业成绩','作业成绩','课后作业','家庭作业'],score:['成绩','分数','得分','score']};
+const aliases = {topic:['知识点','课程知识点','考点','topic'],id:['账号','账户','用户名','学号','学生编号','学生id','id'],name:['姓名','学生姓名','学生','name'],group:['班级','班别','class'],lesson:['课次','课程','课节','课时','上课日期','日期','lesson'],classroom:['课堂练习成绩','课堂成绩','课堂练习','随堂测验','随堂成绩'],homework:['课后作业成绩','作业成绩','课后作业','家庭作业'],score:['成绩','分数','得分','score']};
 export const clean = v => String(v ?? '').normalize('NFKC').trim();
 export function infer(headers){return Object.fromEntries(Object.entries(aliases).map(([k, list])=>[k,headers.findIndex(h=>list.includes(clean(h).toLowerCase()))]));}
 export function csv(text){

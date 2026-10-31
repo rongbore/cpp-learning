@@ -90,6 +90,40 @@ with sync_playwright() as p:
  page.reload();assert page.locator('#results tr').count()==0
  page.locator('#restore').set_input_files(out/'settings.json')
  assert '课程设置已恢复' in page.locator('#globalNotice').inner_text()
+ # Roster-only students, persistence and account-based score association (fictional data).
+ (out/'roster.csv').write_text('班级,姓名,账号,年级,手机号码\n名册测试班,名册甲,roster01,7.10,13000000000\n名册测试班,名册乙,roster02,,\n',encoding='utf-8-sig')
+ page.locator('#rosterSection').evaluate('(d)=>d.open=true')
+ page.locator('#rememberRoster').check()
+ page.locator('#rosterFile').set_input_files(out/'roster.csv')
+ page.wait_for_function('document.querySelectorAll("#rosterRows tr").length===2')
+ assert page.locator('#rosterRows tr').count()==2
+ assert '7.10' in page.locator('#rosterRows').inner_text()
+ assert '130****0000' in page.locator('#rosterRows').inner_text()
+ assert '13000000000' not in page.locator('#rosterRows').inner_text()
+ page.locator('#groupFilter').select_option('名册测试班')
+ page.locator('#lessonFilter').select_option('第1课')
+ assert '2 位学生' in page.locator('#scopeLabel').inner_text()
+ assert page.locator('#results tr').count()==0
+ page.locator('#studentFilter').select_option(label='名册测试班 · 名册乙 (roster02)')
+ assert '证据不足' in page.locator('#studentChart').inner_text()
+ (out/'account-scores.csv').write_text('账号,课次,知识点,课堂练习成绩,课后作业成绩\nroster01,第1课,移项,80,90\n',encoding='utf-8-sig')
+ page.locator('#importGroup').select_option('')
+ page.locator('#file').set_input_files(out/'account-scores.csv')
+ page.get_by_role('button',name='确认并导入',exact=True).click()
+ assert page.locator('#results tr').count()==1
+ assert '名册甲' in page.locator('#results').inner_text()
+ assert '有证据 1/2 人' in page.locator('#classChart').inner_text()
+ page.locator('#selectAll').click();page.locator('#batchReport').click()
+ assert page.locator('#reportPages > article').count()==2
+ assert '13000000000' not in page.locator('#reportPages').inner_text()
+ assert '130****0000' not in page.locator('#reportPages').inner_text()
+ page.locator('#closeReport').click()
+ page.reload()
+ page.locator('#rosterSection').evaluate('(d)=>d.open=true')
+ assert page.locator('#rosterRows tr').count()==2
+ assert page.locator('#results tr').count()==0
+ page.locator('#rememberRoster').uncheck();page.reload()
+ assert page.locator('#rosterRows tr').count()==0
  assert not errors,errors
  browser.close()
 for pdf in ['students','class']:
