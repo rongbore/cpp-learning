@@ -11,9 +11,11 @@
 <form id="classForm" class="controls"><label>新增班级<input id="className" placeholder="例如：七年级一班" maxlength="80" required></label><button type="submit" class="secondary">添加班级</button><div id="classTags" class="tags"></div></form>
 <details id="rosterSection"><summary>班级学员名册 · 导入 / 查看</summary>
 <p class="muted">导入包含“班级、姓名、账号、年级、手机号码”的 XLSX / CSV；只需班级、姓名、账号三列。年级保留为文本（例如 7.10），不作小数运算。账号用于匹配成绩，不是登录密码。</p>
+<form id="unlockRosterForm" class="controls"><label>GitHub 已保存名册的解锁口令<input id="rosterPassword" type="password" autocomplete="off" placeholder="输入单独提供的名册口令" required></label><button type="submit" id="unlockRoster">解锁并载入160人名册</button></form>
+<p class="small muted">名册以加密文件保存在 GitHub，口令仅用于本页解密，不会发送到服务器。可直接解锁，无需下载 CSV。请勿将解锁口令写入仓库或公开分享。</p>
 <div class="controls"><label>文件无班级列时使用<select id="rosterGroup"></select></label><label class="file-label">选择学员名册<input type="file" id="rosterFile" accept=".csv,.xlsx"></label><button id="rosterTemplate" class="secondary">下载空白模板</button><button id="rosterExport" class="secondary">导出全部名册</button><button id="rosterClear" class="text-btn">清空名册</button></div>
 <label class="remember-roster"><input type="checkbox" id="rememberRoster">仅在当前设备浏览器保存名单（含电话；共用设备请勿勾选）</label>
-<p id="rosterNotice" class="small muted" role="status" aria-live="polite">名单不会上传服务器或 GitHub。未勾选保存时，刷新页面后清除；导入课程设置不包含学生名册。</p>
+<p id="rosterNotice" class="small muted" role="status" aria-live="polite">GitHub 仅保存加密名册；解锁后的名单默认只在当前页面内存中。未勾选本机保存时，刷新后需要重新解锁；导入课程设置不包含学生名册。</p>
 <div class="controls"><label>查看名册班级<select id="rosterViewGroup"></select></label><label>搜索学员<input id="rosterSearch" placeholder="姓名 / 账号"></label></div>
 <p id="rosterCount" class="small muted"></p><div class="table-wrap"><table><thead><tr><th>班级</th><th>姓名</th><th>年级</th><th>账号</th><th>电话（脱敏）</th></tr></thead><tbody id="rosterRows"></tbody></table></div>
 </details>

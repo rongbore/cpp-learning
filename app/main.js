@@ -1,6 +1,7 @@
 import {fields,infer,csv,normalize,merge,feedback,exportCSV,clean} from './core.js';
 import {readXLSX} from './xlsx.js';
 import {DEFAULT_CLASSES} from './school.js';
+import {decryptRoster} from './secure-roster.js';
 import {parseRoster,combineRoster,linkRoster,maskedPhone} from './roster.js';
 import {studentKey,topicKey,studentsIn,masteryForStudent,aggregateTopics,evidence,learningPlan,fmt,mean} from './analysis.js';
 import {$,el,fillSelect,bar,badge,download} from './ui.js';
@@ -92,6 +93,12 @@ function renderChecklist(students){
   $('studentChecklist').replaceChildren(...students.map(s=>{const label=el('label',undefined,'student-choice'),input=el('input');input.type='checkbox';input.checked=selectedStudents.has(studentKey(s));input.addEventListener('change',()=>{if(input.checked)selectedStudents.add(studentKey(s));else selectedStudents.delete(studentKey(s));});label.append(input,el('span',`${s.group||'未分班'} · ${s.name||s.id} · ${s.id||'无学号'}`));return label;}));
 }
 
+$('unlockRosterForm').addEventListener('submit',async e=>{
+ e.preventDefault();const input=$('rosterPassword'),button=$('unlockRoster');let password=input.value;input.value='';button.disabled=true;$('rosterNotice').textContent='正在本地解锁名册…';
+ try{const response=await fetch(new URL('./data/roster.encrypted.json',import.meta.url),{cache:'no-store',credentials:'omit'});if(!response.ok)throw Error('暂时无法读取加密名册，请稍后重试。');const body=await response.text();if(body.length>8*1024*1024)throw Error('加密文件过大');const plain=await decryptRoster(JSON.parse(body),password);const incoming=parseRoster(csv(plain));const next=combineRoster(roster,incoming);if(next.length>5000)throw Error('本机名册最多5000位学生');roster=next;classes=[...new Set([...classes,...roster.map(r=>r.group)])];if(example){records=[];example=false;importNames=[];selectedStudents.clear();}saveConfig();persistRoster();render();$('rosterNotice').textContent=`已成功解锁 ${incoming.length} 位学员，当前名册 ${roster.length} 人。`+($('rememberRoster').checked?'名单已保存在当前设备。':'刷新后需重新解锁，或勾选仅本机保存。');notify('GitHub 加密名册已按班级载入；可直接录入成绩和生成报告。');}
+ catch(err){$('rosterNotice').textContent=err.message==='Failed to fetch'?'无法连接加密名册，请检查网络后重试。':err.message;}
+ finally{password='';button.disabled=false;}
+});
 $('rosterFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>5*1024*1024)throw Error('名册文件最多5MB');const lower=file.name.toLowerCase();const table=lower.endsWith('.xlsx')?await readXLSX(file):lower.endsWith('.csv')?csv(await file.text()):(()=>{throw Error('请选择 CSV 或 XLSX 文件');})();const incoming=parseRoster(table,$('rosterGroup').value);const next=combineRoster(roster,incoming);if(next.length>5000)throw Error('本机名册最多5000位学生');roster=next;classes=[...new Set([...classes,...roster.map(r=>r.group)])];if(example){records=[];example=false;importNames=[];selectedStudents.clear();}saveConfig();persistRoster();render();$('rosterNotice').textContent=`已处理 ${incoming.length} 位学生，当前名册 ${roster.length} 人；同班同账号去重。`+($('rememberRoster').checked?'已保存到当前设备。':'尚未勾选本机保存，刷新后清除。');notify('学员已按班级导入，可选择学生录入知识点成绩。未评分学生显示证据不足，不计为零分。');}catch(err){$('rosterNotice').textContent='名册未导入：'+err.message;}e.target.value='';});
 $('rememberRoster').addEventListener('change',()=>{persistRoster();$('rosterNotice').textContent=$('rememberRoster').checked?'名单仅保存到当前设备浏览器，不会同步或上传。':'已关闭本机保存并移除保存副本；当前页面仍可使用，刷新后清除。';});
 for(const id of ['rosterViewGroup','rosterSearch'])$(id).addEventListener('input',renderRoster);
